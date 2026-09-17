@@ -1,9 +1,12 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 
-// simpan instance di globalThis biar ga bikin koneksi baru tiap hot-reload pas dev
+// Prisma 7 wajib pakai driver adapter, gak bisa connect langsung pakai url doang
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter })
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma

@@ -1,7 +1,10 @@
+import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient()
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+const prisma = new PrismaClient({ adapter })
 
 const dummyEvents = [
   { title: 'IEEE Tech Talk: AI in Industry', location: 'Aula Barat ITB', daysFromNow: 7, status: 'PUBLISHED' as const },

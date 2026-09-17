@@ -37,13 +37,14 @@ app/
     events/[id]/route.ts    -> GET detail, PATCH update, DELETE (admin)
 lib/
   auth.ts                   -> hash password, sign/verify JWT
-  prisma.ts                 -> Prisma Client singleton
+  prisma.ts                 -> Prisma Client singleton (pakai driver adapter @prisma/adapter-pg)
   validations.ts            -> Zod schema untuk login & event
   slug.ts                   -> generator slug event
   response.ts               -> helper format response API konsisten
 prisma/
-  schema.prisma             -> model User & Event
+  schema.prisma             -> model User & Event (tanpa url, ikut aturan Prisma 7)
   seed.ts                   -> data awal (1 admin, 8 event dummy)
+prisma.config.ts            -> config koneksi DB untuk CLI Prisma 7 (generate/migrate/seed)
 proxy.ts                    -> proteksi route admin (pengganti middleware.ts di Next.js 16)
 ```
 
@@ -56,7 +57,7 @@ proxy.ts                    -> proteksi route admin (pengganti middleware.ts di 
 | Framework | Next.js 16 (App Router) + TypeScript | Satu codebase FE+BE, Route Handler = REST API sungguhan, type-safety end-to-end |
 | Styling | Tailwind CSS | Cepat untuk styling responsif tanpa nulis CSS terpisah |
 | Database | PostgreSQL | Relasional, cocok untuk relasi User-Event, gratis lewat Neon/Supabase |
-| ORM | Prisma | Schema-as-code, migration jelas, tipe otomatis ke TypeScript |
+| ORM | Prisma 7 + driver adapter (`@prisma/adapter-pg`) | Schema-as-code, migration jelas, tipe otomatis ke TypeScript. Prisma 7 menghapus engine Rust dari client, jadi wajib pakai driver adapter (`pg`) untuk konek ke database |
 | Autentikasi | JWT (httpOnly cookie) + bcrypt | Mekanismenya bisa dijelaskan detail saat interview, tidak bergantung library auth pihak ketiga |
 | Validasi | Zod | Satu schema dipakai untuk validasi backend (dan nanti form frontend) |
 
@@ -74,13 +75,13 @@ proxy.ts                    -> proteksi route admin (pengganti middleware.ts di 
 git clone <url-repo-ini>
 cd ieee-event-app
 
-# 2. Install dependency
-npm install
-
-# 3. Copy env dan isi sesuai punya sendiri
+# 2. Copy env dan isi DATABASE_URL & JWT_SECRET punya sendiri
 cp .env.example .env
 
-# 4. Migrasi database + generate Prisma Client
+# 3. Install dependency (otomatis jalanin `prisma generate` lewat postinstall)
+npm install
+
+# 4. Migrasi database (bikin tabel sesuai schema.prisma)
 npx prisma migrate dev --name init
 
 # 5. Isi data awal (1 admin + 8 event dummy)
@@ -91,6 +92,13 @@ npm run dev
 ```
 
 Buka `http://localhost:3000`.
+
+> **Catatan Prisma 7**: mulai versi 7, `prisma migrate dev` tidak lagi otomatis jalanin `generate` atau seed setelahnya — makanya di sini generate dipisah lewat `postinstall` dan seed dijalankan manual di step 5. Kalau kamu ubah `schema.prisma` di kemudian hari, jalankan ulang `npx prisma generate` secara manual.
+
+### Troubleshooting
+
+- **Error `P1012` soal `url` di schema.prisma tidak didukung** — pastikan kamu pakai kode dari repo ini apa adanya; konfigurasi koneksi DB sudah dipindah ke `prisma.config.ts`, bukan lagi di `schema.prisma`.
+- **Error `P1010` / SSL saat konek ke Neon/Supabase** — pastikan `DATABASE_URL` di `.env` menyertakan `?sslmode=require` di akhir connection string.
 
 ## 6. Environment Variables
 
