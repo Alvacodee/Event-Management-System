@@ -4,7 +4,9 @@ import { SignJWT, jwtVerify } from 'jose'
 export const SESSION_COOKIE = 'admin_token'
 
 // secret di-encode sekali di module scope, dipakai berulang buat sign & verify
-const secretKey = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-jangan-dipakai-di-production')
+const secretKey = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'fallback-secret-jangan-dipakai-di-production',
+)
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10)
