@@ -2,7 +2,7 @@
 
 Platform showcase dan manajemen event untuk IEEE ITB Student Branch. Dibuat untuk probation phase divisi Fullstack Developer.
 
-> Status: backend selesai, frontend masih dikerjakan. Bagian yang masih ditandai `TODO` akan diisi begitu semua fitur rampung.
+> Status: seluruh MUST HAVE sudah selesai (backend + frontend). Tinggal deploy ke Vercel dan polish SHOULD HAVE kalau ada waktu sisa sebelum deadline.
 
 ## 1. Ringkasan Proyek
 
@@ -16,13 +16,14 @@ Aplikasi ini punya dua sisi:
 - [x] Skema database (User, Event) dengan Prisma + PostgreSQL
 - [x] Autentikasi admin (JWT di httpOnly cookie + bcrypt)
 - [x] API event: list (dengan search, filter upcoming/past, pagination), detail, create, update, delete
-- [x] Validasi input di backend pakai Zod
+- [x] Validasi input di backend pakai Zod (schema yang sama dipakai ulang di form frontend)
 - [x] Proteksi route admin lewat `proxy.ts` (dulu `middleware.ts`, sudah mengikuti konvensi Next.js 16 terbaru)
-- [ ] TODO: Halaman publik (event list & detail)
-- [ ] TODO: Halaman login admin
-- [ ] TODO: Dashboard admin (tabel + form create/edit + konfirmasi delete)
-- [ ] TODO: Loading, empty, error state di UI
+- [x] Halaman publik: event list (search, filter upcoming/past, pagination) & detail event
+- [x] Halaman login admin
+- [x] Dashboard admin: tabel event, form create/edit, konfirmasi hapus inline
+- [x] Loading state (Next.js `loading.tsx` per route), empty state, error state (`error.tsx` + tombol coba lagi)
 - [ ] TODO: Deploy ke Vercel
+- [ ] TODO (SHOULD HAVE, opsional): image upload beneran (sekarang cuma field URL manual)
 
 ## 3. Arsitektur
 
@@ -35,18 +36,35 @@ app/
     auth/logout/route.ts    -> POST logout, clear cookie
     events/route.ts         -> GET list (public/admin beda scope), POST create (admin)
     events/[id]/route.ts    -> GET detail, PATCH update, DELETE (admin)
+  page.tsx                  -> publik: event list (search, filter, pagination)
+  events/[id]/page.tsx      -> publik: detail event
+  login/page.tsx            -> form login admin
+  dashboard/
+    layout.tsx              -> shell dashboard (nav, logout)
+    page.tsx                -> tabel semua event (fetch pakai cookie admin)
+    events/new/page.tsx     -> form tambah event
+    events/[id]/edit/page.tsx -> form edit event
+  loading.tsx, error.tsx, not-found.tsx  -> loading/error/empty state per route (konvensi Next.js)
+components/
+  EventForm.tsx             -> form create/edit, validasi Zod yang sama dengan backend
+  DashboardTable.tsx        -> tabel event + konfirmasi hapus inline
+  EventRow.tsx, StatusBadge.tsx, EmptyState.tsx, ErrorRetry.tsx, SiteHeader.tsx, LogoutButton.tsx
 lib/
   auth.ts                   -> hash password, sign/verify JWT
   prisma.ts                 -> Prisma Client singleton (pakai driver adapter @prisma/adapter-pg)
-  validations.ts            -> Zod schema untuk login & event
+  validations.ts            -> Zod schema untuk login & event (dipakai backend & form frontend)
   slug.ts                   -> generator slug event
   response.ts               -> helper format response API konsisten
+  base-url.ts                -> helper self-fetch API dari Server Component
+  format.ts, types.ts        -> util format tanggal & tipe data event untuk frontend
 prisma/
   schema.prisma             -> model User & Event (tanpa url, ikut aturan Prisma 7)
   seed.ts                   -> data awal (1 admin, 8 event dummy)
 prisma.config.ts            -> config koneksi DB untuk CLI Prisma 7 (generate/migrate/seed)
 proxy.ts                    -> proteksi route admin (pengganti middleware.ts di Next.js 16)
 ```
+
+Halaman publik & detail adalah Server Component yang manggil REST API sendiri lewat `fetch` (bukan panggil Prisma langsung), biar arsitektur frontend-backend-nya kelihatan jelas dan sesuai requirement. Search, filter, dan pagination di halaman publik pakai native HTML form/link (query string), jadi gak butuh JavaScript client-side sama sekali buat itu. Dashboard admin pakai Client Component karena butuh interaksi instan (hapus dengan konfirmasi, submit form tanpa reload penuh).
 
 **Kenapa monolith, bukan backend terpisah?** Requirement tidak mengharuskan backend terpisah, dan dengan deadline singkat, satu codebase Next.js lebih cepat di-deploy dan di-maintain sambil tetap punya REST API endpoint yang jelas dan bisa dijelaskan satu per satu.
 
@@ -125,7 +143,9 @@ Setelah `npm run db:seed`:
 
 ## 9. Known Issues / Limitations
 
-- TODO: diisi setelah frontend selesai
+- Saat event tidak ditemukan (`/events/[id]` untuk id yang tidak ada), halaman menampilkan konten "Event tidak ditemukan" dengan benar, tapi status HTTP response-nya masih 200, bukan 404 — ini quirk streaming SSR Next.js 16 saat `notFound()` dipanggil di dalam Server Component yang di-stream. Endpoint API `/api/events/[id]` sendiri sudah mengembalikan 404 dengan benar (sudah diverifikasi manual).
+- Upload gambar event masih berupa input URL manual, belum ada upload file beneran ke storage (SHOULD HAVE, belum sempat dikerjakan karena keterbatasan waktu).
+- Belum ada test otomatis (unit/e2e) karena fokus waktu ke fitur MUST HAVE dan kualitas kode.
 
 ## 10. Penggunaan AI Tools
 
