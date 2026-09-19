@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ArrowLeft, MapPin, Calendar } from 'lucide-react'
 import { getBaseUrl } from '@/lib/base-url'
 import { StatusBadge } from '@/components/StatusBadge'
 import { SiteHeader } from '@/components/SiteHeader'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { formatFullDate } from '@/lib/format'
 import type { EventItem } from '@/lib/types'
 
@@ -28,21 +30,34 @@ export default async function EventDetailPage({ params }: Params) {
   return (
     <>
       <SiteHeader />
-      <div className="mx-auto max-w-2xl px-6 py-12">
-        <Link href="/" className="text-sm text-muted hover:text-brand">
-          ← Kembali ke daftar event
+      <div className="mx-auto max-w-2xl px-6 py-10">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-6"
+        >
+          <ArrowLeft className="size-4" />
+          Kembali ke daftar event
         </Link>
 
-        <div className="mt-6">
-          <StatusBadge status={event.status} />
-          <h1 className="text-2xl font-semibold text-ink mt-3">{event.title}</h1>
-          <p className="text-muted mt-1 tabular">{formatFullDate(event.date)}</p>
-          <p className="text-muted">{event.location}</p>
-        </div>
-
-        <div className="mt-8 pt-8 border-t border-line whitespace-pre-line text-ink leading-relaxed">
-          {event.description}
-        </div>
+        <Card>
+          <CardHeader>
+            <StatusBadge status={event.status} />
+            <h1 className="text-2xl font-bold text-foreground mt-2">{event.title}</h1>
+            <div className="flex flex-col gap-1 text-sm text-muted-foreground mt-1">
+              <span className="flex items-center gap-1.5 tabular">
+                <Calendar className="size-4" />
+                {formatFullDate(event.date)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <MapPin className="size-4" />
+                {event.location}
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent className="pb-6 pt-2 border-t whitespace-pre-line leading-relaxed">
+            {event.description}
+          </CardContent>
+        </Card>
       </div>
     </>
   )

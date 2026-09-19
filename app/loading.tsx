@@ -1,18 +1,16 @@
+import { Skeleton } from '@/components/ui/skeleton'
+
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12 animate-pulse">
-      <div className="h-4 w-40 bg-line rounded mb-2" />
-      <div className="h-8 w-32 bg-line rounded mb-8" />
-      <div className="h-10 w-full bg-line rounded mb-6" />
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="flex gap-4 py-5 border-b border-line">
-          <div className="w-14 h-10 bg-line rounded shrink-0" />
-          <div className="flex-1">
-            <div className="h-4 w-2/3 bg-line rounded mb-2" />
-            <div className="h-3 w-1/3 bg-line rounded" />
-          </div>
-        </div>
-      ))}
+    <div className="mx-auto max-w-4xl px-6 py-10">
+      <Skeleton className="h-4 w-40 mb-2" />
+      <Skeleton className="h-8 w-32 mb-8" />
+      <Skeleton className="h-9 w-full mb-6" />
+      <div className="grid gap-3 sm:grid-cols-2">
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-20 w-full" />
+        ))}
+      </div>
     </div>
   )
 }
