@@ -1,6 +1,9 @@
 import { getBaseUrl, getCookieHeader } from '@/lib/base-url'
 import { DashboardTable } from '@/components/DashboardTable'
+import { EventFormDialog } from '@/components/EventFormDialog'
 import { EmptyState } from '@/components/EmptyState'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 import type { EventItem } from '@/lib/types'
 
 async function getAllEvents() {
@@ -18,7 +21,22 @@ export default async function DashboardPage() {
   const events = await getAllEvents()
 
   if (events.length === 0) {
-    return <EmptyState title="Belum ada event" description="Mulai dengan menambah event pertama." />
+    return (
+      <div>
+        <EmptyState title="Belum ada event" description="Mulai dengan menambah event pertama." />
+        <div className="flex justify-center mt-4">
+          <EventFormDialog
+            mode="create"
+            trigger={
+              <Button size="sm">
+                <Plus />
+                Tambah Event
+              </Button>
+            }
+          />
+        </div>
+      </div>
+    )
   }
 
   return <DashboardTable events={events} />

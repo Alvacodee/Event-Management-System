@@ -2,12 +2,20 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { eventSchema } from '@/lib/validations'
 import type { EventItem, EventStatus } from '@/lib/types'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 
 type Props = {
   mode: 'create' | 'edit'
   initialEvent?: EventItem
+  onSuccess: () => void
+  onCancel: () => void
 }
 
 type FormState = {
@@ -30,7 +38,7 @@ function toFormState(event?: EventItem): FormState {
   }
 }
 
-export function EventForm({ mode, initialEvent }: Props) {
+export function EventForm({ mode, initialEvent, onSuccess, onCancel }: Props) {
   const router = useRouter()
   const [form, setForm] = useState<FormState>(toFormState(initialEvent))
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[] | undefined>>({})
@@ -71,86 +79,62 @@ export function EventForm({ mode, initialEvent }: Props) {
       return
     }
 
-    router.push('/dashboard')
+    toast.success(mode === 'create' ? 'Event berhasil ditambahkan' : 'Event berhasil diperbarui')
     router.refresh()
+    setLoading(false)
+    onSuccess()
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <Field label="Judul" error={fieldErrors.title}>
-        <input
-          value={form.title}
-          onChange={(e) => update('title', e.target.value)}
-          className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
-        />
+        <Input value={form.title} onChange={(e) => update('title', e.target.value)} />
       </Field>
 
       <Field label="Deskripsi" error={fieldErrors.description}>
-        <textarea
-          value={form.description}
-          onChange={(e) => update('description', e.target.value)}
-          rows={5}
-          className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
-        />
+        <Textarea value={form.description} onChange={(e) => update('description', e.target.value)} rows={4} />
       </Field>
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Tanggal" error={fieldErrors.date}>
-          <input
-            type="date"
-            value={form.date}
-            onChange={(e) => update('date', e.target.value)}
-            className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
-          />
+          <Input type="date" value={form.date} onChange={(e) => update('date', e.target.value)} />
         </Field>
 
         <Field label="Status" error={fieldErrors.status}>
-          <select
-            value={form.status}
-            onChange={(e) => update('status', e.target.value as EventStatus)}
-            className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
-          >
-            <option value="DRAFT">Draft</option>
-            <option value="PUBLISHED">Terbit</option>
-            <option value="CANCELLED">Dibatalkan</option>
-          </select>
+          <Select value={form.status} onValueChange={(v) => update('status', v as EventStatus)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="DRAFT">Draft</SelectItem>
+              <SelectItem value="PUBLISHED">Terbit</SelectItem>
+              <SelectItem value="CANCELLED">Dibatalkan</SelectItem>
+            </SelectContent>
+          </Select>
         </Field>
       </div>
 
       <Field label="Lokasi" error={fieldErrors.location}>
-        <input
-          value={form.location}
-          onChange={(e) => update('location', e.target.value)}
-          className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
-        />
+        <Input value={form.location} onChange={(e) => update('location', e.target.value)} />
       </Field>
 
       <Field label="URL Gambar (opsional)" error={fieldErrors.imageUrl}>
-        <input
+        <Input
           value={form.imageUrl}
           onChange={(e) => update('imageUrl', e.target.value)}
           placeholder="https://..."
-          className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
         />
       </Field>
 
-      {formError && <p className="text-sm text-danger">{formError}</p>}
+      {formError && <p className="text-sm text-destructive">{formError}</p>}
 
-      <div className="flex gap-3 pt-2">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand-deep transition-colors disabled:opacity-60"
-        >
-          {loading ? 'Menyimpan...' : 'Simpan'}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push('/dashboard')}
-          className="rounded-md border border-line px-4 py-2 text-sm text-muted hover:border-brand"
-        >
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onCancel}>
           Batal
-        </button>
+        </Button>
+        <Button type="submit" disabled={loading}>
+          {loading ? 'Menyimpan...' : 'Simpan'}
+        </Button>
       </div>
     </form>
   )
@@ -158,10 +142,10 @@ export function EventForm({ mode, initialEvent }: Props) {
 
 function Field({ label, error, children }: { label: string; error?: string[]; children: React.ReactNode }) {
   return (
-    <div>
-      <label className="block text-sm text-muted mb-1">{label}</label>
+    <div className="space-y-1.5">
+      <Label>{label}</Label>
       {children}
-      {error?.[0] && <p className="text-xs text-danger mt-1">{error[0]}</p>}
+      {error?.[0] && <p className="text-xs text-destructive">{error[0]}</p>}
     </div>
   )
 }
