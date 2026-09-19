@@ -1,19 +1,20 @@
-import type { Metadata } from 'next'
-import './globals.css'
-import { Toaster } from '@/components/ui/sonner'
+import Link from 'next/link'
+import { CalendarDays } from 'lucide-react'
+import { LogoutButton } from '@/components/LogoutButton'
 
-export const metadata: Metadata = {
-  title: 'IEEE ITB SB - Event Management',
-  description: 'Platform showcase dan manajemen event IEEE ITB Student Branch',
-}
-
-export default function RootLayout({ children }: LayoutProps<'/'>) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className="h-full antialiased">
-      <body className="min-h-full flex flex-col font-sans">
-        {children}
-        <Toaster position="top-center" richColors />
-      </body>
-    </html>
+    <div className="min-h-screen bg-muted/30">
+      <header className="border-b bg-background">
+        <div className="mx-auto max-w-3xl px-6 py-4 flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-foreground">
+            <CalendarDays className="size-5 text-primary" />
+            Dashboard Admin
+          </Link>
+          <LogoutButton />
+        </div>
+      </header>
+      <main className="mx-auto max-w-3xl px-6 py-8">{children}</main>
+    </div>
   )
 }
