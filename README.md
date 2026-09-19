@@ -95,8 +95,8 @@ Halaman publik & detail adalah Server Component yang manggil REST API sendiri le
 
 ```bash
 # 1. Clone repo
-git clone <url-repo-ini>
-cd ieee-event-app
+git clone https://github.com/Alvacodee/Event-Management-System.git
+cd Event-Management-System
 
 # 2. Copy env dan isi DATABASE_URL & JWT_SECRET punya sendiri
 cp .env.example .env
