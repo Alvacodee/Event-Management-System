@@ -20,8 +20,9 @@ Aplikasi ini punya dua sisi:
 - [x] Proteksi route admin lewat `proxy.ts` (dulu `middleware.ts`, sudah mengikuti konvensi Next.js 16 terbaru)
 - [x] Halaman publik: event list (search, filter upcoming/past, pagination) & detail event
 - [x] Halaman login admin
-- [x] Dashboard admin: tabel event, form create/edit, konfirmasi hapus inline
-- [x] Loading state (Next.js `loading.tsx` per route), empty state, error state (`error.tsx` + tombol coba lagi)
+- [x] Dashboard admin: tabel event, tambah/edit event lewat modal (Dialog), hapus dengan konfirmasi (AlertDialog)
+- [x] UI pakai shadcn/ui (komponen di-copy manual ke `components/ui/`, bukan lewat CLI — lihat catatan di bagian Tech Stack) dengan tema warna biru dan notifikasi toast (Sonner)
+- [x] Loading state (Next.js `loading.tsx` per route, skeleton shadcn), empty state, error state (`error.tsx` + tombol coba lagi)
 - [ ] TODO: Deploy ke Vercel
 - [ ] TODO (SHOULD HAVE, opsional): image upload beneran (sekarang cuma field URL manual)
 
@@ -42,15 +43,16 @@ app/
   dashboard/
     layout.tsx              -> shell dashboard (nav, logout)
     page.tsx                -> tabel semua event (fetch pakai cookie admin)
-    events/new/page.tsx     -> form tambah event
-    events/[id]/edit/page.tsx -> form edit event
   loading.tsx, error.tsx, not-found.tsx  -> loading/error/empty state per route (konvensi Next.js)
 components/
+  ui/                       -> komponen dasar shadcn/ui (Button, Card, Dialog, AlertDialog, Table, Select, dll)
   EventForm.tsx             -> form create/edit, validasi Zod yang sama dengan backend
-  DashboardTable.tsx        -> tabel event + konfirmasi hapus inline
-  EventRow.tsx, StatusBadge.tsx, EmptyState.tsx, ErrorRetry.tsx, SiteHeader.tsx, LogoutButton.tsx
+  EventFormDialog.tsx       -> bungkus EventForm dalam modal (Dialog), dipakai untuk tambah & edit
+  DashboardTable.tsx        -> tabel event + hapus lewat AlertDialog konfirmasi
+  EventCard.tsx, StatusBadge.tsx, EmptyState.tsx, ErrorRetry.tsx, SiteHeader.tsx, LogoutButton.tsx
 lib/
   auth.ts                   -> hash password, sign/verify JWT
+  utils.ts                  -> helper cn() (clsx + tailwind-merge) dipakai komponen shadcn
   prisma.ts                 -> Prisma Client singleton (pakai driver adapter @prisma/adapter-pg)
   validations.ts            -> Zod schema untuk login & event (dipakai backend & form frontend)
   slug.ts                   -> generator slug event
@@ -73,11 +75,14 @@ Halaman publik & detail adalah Server Component yang manggil REST API sendiri le
 | Kategori | Pilihan | Alasan |
 |---|---|---|
 | Framework | Next.js 16 (App Router) + TypeScript | Satu codebase FE+BE, Route Handler = REST API sungguhan, type-safety end-to-end |
-| Styling | Tailwind CSS | Cepat untuk styling responsif tanpa nulis CSS terpisah |
+| Styling | Tailwind CSS v4 + shadcn/ui | Tailwind buat utility styling responsif; shadcn/ui buat komponen interaktif (Dialog, AlertDialog, Table, Select) yang aksesibel (dibangun di atas Radix UI primitives) tanpa harus nulis sendiri dari nol |
 | Database | PostgreSQL | Relasional, cocok untuk relasi User-Event, gratis lewat Neon/Supabase |
 | ORM | Prisma 7 + driver adapter (`@prisma/adapter-pg`) | Schema-as-code, migration jelas, tipe otomatis ke TypeScript. Prisma 7 menghapus engine Rust dari client, jadi wajib pakai driver adapter (`pg`) untuk konek ke database |
 | Autentikasi | JWT (httpOnly cookie) + bcrypt | Mekanismenya bisa dijelaskan detail saat interview, tidak bergantung library auth pihak ketiga |
-| Validasi | Zod | Satu schema dipakai untuk validasi backend (dan nanti form frontend) |
+| Validasi | Zod | Satu schema dipakai untuk validasi backend dan form frontend (client + server validation konsisten) |
+| Notifikasi | Sonner (toast) | Feedback aksi (simpan/hapus event) yang instan tanpa reload halaman |
+
+> **Catatan shadcn/ui**: komponen di `components/ui/` ditulis manual (bukan lewat `npx shadcn add`) karena sandbox development sempat tidak bisa akses `ui.shadcn.com`. Struktur & konvensinya tetap sama persis dengan output CLI shadcn resmi (pakai Radix UI primitives + `class-variance-authority` + `cn()` helper), jadi tetap kompatibel kalau mau `npx shadcn add <komponen>` lagi di kemudian hari — `components.json` sudah disiapkan.
 
 ## 5. Setup Lokal
 
