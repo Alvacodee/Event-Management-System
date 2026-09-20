@@ -23,7 +23,6 @@ Aplikasi ini punya dua sisi:
 - [x] Dashboard admin: tabel event, tambah/edit event lewat modal (Dialog), hapus dengan konfirmasi (AlertDialog)
 - [x] UI pakai shadcn/ui (komponen di-copy manual ke `components/ui/`, bukan lewat CLI — lihat catatan di bagian Tech Stack) dengan tema warna biru dan notifikasi toast (Sonner)
 - [x] Loading state (Next.js `loading.tsx` per route, skeleton shadcn), empty state, error state (`error.tsx` + tombol coba lagi)
-- [ ] TODO: Deploy ke Vercel
 - [ ] TODO (SHOULD HAVE, opsional): image upload beneran (sekarang cuma field URL manual)
 
 ## 3. Arsitektur
