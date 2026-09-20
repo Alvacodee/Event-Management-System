@@ -24,7 +24,6 @@ Aplikasi ini punya dua sisi:
 - [x] UI pakai shadcn/ui (komponen di-copy manual ke `components/ui/`, bukan lewat CLI — lihat catatan di bagian Tech Stack) dengan tema warna biru dan notifikasi toast (Sonner)
 - [x] Loading state (Next.js `loading.tsx` per route, skeleton shadcn), empty state, error state (`error.tsx` + tombol coba lagi)
 
-
 ## 3. Arsitektur
 
 Monolith Next.js (App Router) — frontend dan backend satu codebase. Route Handler di `app/api/**` berfungsi sebagai REST API asli, dipanggil dari sisi client dengan `fetch`.
@@ -81,14 +80,17 @@ Halaman publik & detail adalah Server Component yang manggil REST API sendiri le
 | Validasi | Zod | Satu schema dipakai untuk validasi backend dan form frontend (client + server validation konsisten) |
 | Notifikasi | Sonner (toast) | Feedback aksi (simpan/hapus event) yang instan tanpa reload halaman |
 
-> **Catatan shadcn/ui**: komponen di `components/ui/` ditulis manual (bukan lewat `npx shadcn add`) karena sandbox development sempat tidak bisa akses `ui.shadcn.com`. Struktur & konvensinya tetap sama persis dengan output CLI shadcn resmi (pakai Radix UI primitives + `class-variance-authority` + `cn()` helper), jadi tetap kompatibel kalau mau `npx shadcn add <komponen>` lagi di kemudian hari — `components.json` sudah disiapkan.
+> **Catatan shadcn/ui**: komponen di `components/ui/` ditulis manual (bukan lewat `npx shadcn add`) karena environment yang dipakai sempat tidak bisa akses `ui.shadcn.com`. Struktur & konvensinya tetap sama persis dengan output CLI shadcn resmi (pakai Radix UI primitives + `class-variance-authority` + `cn()` helper), jadi tetap kompatibel kalau mau `npx shadcn add <komponen>` lagi di kemudian hari — `components.json` sudah disiapkan.
 
 ## 5. Setup Lokal
 
 ### Prasyarat
 
 - Node.js 20+
-- PostgreSQL (lokal, atau pakai Neon/Supabase gratis)
+- PostgreSQL — pilih salah satu:
+  - **Docker** (paling gampang): sudah disediakan `docker-compose.yml`, tinggal `docker compose up -d --wait`
+  - PostgreSQL lokal yang sudah terinstall
+  - Neon/Supabase (gratis, hosted)
 
 ### Langkah
 
@@ -99,6 +101,10 @@ cd Event-Management-System
 
 # 2. Copy env dan isi DATABASE_URL & JWT_SECRET punya sendiri
 cp .env.example .env
+
+# 2b. (Opsional) Kalau pakai Docker untuk database lokal:
+docker compose up -d --wait
+# lalu isi .env dengan: DATABASE_URL="postgresql://dev:dev@localhost:5435/ieee_event_dev"
 
 # 3. Install dependency (otomatis jalanin `prisma generate` lewat postinstall)
 npm install
